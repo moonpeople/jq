@@ -13,12 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp:
-          - "27.3.4.2-3"
-        rebar3:
-          - "3.22.0"
-        os:
-          - macos-15
+        include:
+          - otp: "27.3.4.2-6"
+            rebar3: "3.22.0"
+            os: macos-15
+          - otp: "28.2-2"
+            rebar3: "3.25.1"
+            os: macos-15
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -45,8 +46,10 @@ jobs:
           - amd64
           - arm64
         builder:
-          - vsn: "5.6-2:1.18.3-27.3.4.2-3"
-            otp: "27.3.4.2-3"
+          - vsn: "6.0-8:1.18.3-27.3.4.2-6"
+            otp: "27.3.4.2-6"
+          - vsn: "6.0-8:1.19.1-28.2-2"
+            otp: "28.2-2"
 
     runs-on: ubuntu-24.04${{ matrix.arch == 'arm64' && '-arm' || '' }}
     container: ghcr.io/emqx/emqx-builder/${{ matrix.builder.vsn }}-${{ matrix.os }}
