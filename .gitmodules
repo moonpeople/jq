@@ -5,4 +5,4 @@
 [submodule "c_src/libs/jqc"]
 	path = c_src/libs/jqc
 	url = https://github.com/emqx/jqc.git
-	branch = jq-1.6-emqx
+	branch = jq-1.8-emqx

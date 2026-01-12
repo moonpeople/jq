@@ -3,7 +3,7 @@ UNAME_SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
 CURDIR := .
 BASEDIR := $(CURDIR)/..
-VERSION := $(shell escript get_version.erl ../src/jq_nif.erl) 
+VERSION := $(shell escript get_version.erl ../src/jq_nif.erl)
 VERSION := $(strip $(VERSION))
 JQERLMODSRC := $(BASEDIR)/src/jq_nif.erl
 
@@ -53,19 +53,19 @@ C_SRC_OUTPUT ?= $(PRIV_DIR)/$(NIF_MODULE)$(VERSION).so
 
 ifeq ($(UNAME_SYS), Darwin)
 	CC ?= gcc
-	CFLAGS ?= $(EXTRA_C_FLAGS) -std=c11 -arch $(ARCH) -finline-functions -Wall -Wno-missing-prototypes -Wno-unused-function
+	CFLAGS ?= $(EXTRA_C_FLAGS) -arch $(ARCH) -finline-functions -Wall -Wno-missing-prototypes -Wno-unused-function
 	CXXFLAGS ?= -O3 -arch $(ARCH) -finline-functions -Wall
 	LDFLAGS ?= -arch $(ARCH) -undefined dynamic_lookup
 	LD_JQLIBS ?= -ljq -lonig
 else ifeq ($(UNAME_SYS), FreeBSD)
 	CC ?= gcc
-	CFLAGS ?= $(EXTRA_C_FLAGS) -std=c11 -finline-functions -Wall -Wno-missing-prototypes -Wno-unused-function
+	CFLAGS ?= $(EXTRA_C_FLAGS) -finline-functions -Wall -Wno-missing-prototypes -Wno-unused-function
 	CXXFLAGS ?= $(EXTRA_C_FLAGS) -finline-functions -Wall
 	LDFLAGS += -Wl,-rpath,$$ORIGIN
 	LD_JQLIBS ?= -l:libjq.a -l:libonig.a
 else ifeq ($(UNAME_SYS), Linux)
 	CC ?= gcc
-	CFLAGS ?= $(EXTRA_C_FLAGS) -std=c11 -finline-functions -Wall -Wno-missing-prototypes -Wno-unused-function
+	CFLAGS ?= $(EXTRA_C_FLAGS) -finline-functions -Wall -Wno-missing-prototypes -Wno-unused-function
 	CXXFLAGS ?= $(EXTRA_C_FLAGS) -finline-functions -Wall
 	LDFLAGS += -Wl,-rpath,$$ORIGIN
 	LD_JQLIBS ?= -l:libjq.a -l:libonig.a
@@ -114,7 +114,7 @@ endif
 	$(link_verbose) $(CC) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(C_SRC_OUTPUT)
 ifeq ($(UNAME_SYS), Darwin)
 	cp $(JQSRC_DIR)/.libs/$(LIBJQ) $(PRIV_DIR)/
-	cp $(JQSRC_DIR)/modules/oniguruma/src/.libs/$(LIBONIG) $(PRIV_DIR)/
+	cp $(JQSRC_DIR)/vendor/oniguruma/src/.libs/$(LIBONIG) $(PRIV_DIR)/
 	install_name_tool -change $(LIBJQ_PREFIX)/lib/$(LIBONIG) "@loader_path/$(LIBONIG)" $(PRIV_DIR)/$(LIBJQ)
 	install_name_tool -change $(LIBJQ_PREFIX)/lib/$(LIBONIG) "@loader_path/$(LIBONIG)" $(PRIV_DIR)/$(LIBJQ)
 	install_name_tool -change $(LIBJQ_PREFIX)/lib/$(LIBONIG) "@loader_path/$(LIBONIG)" $(C_SRC_OUTPUT)
@@ -137,13 +137,11 @@ $(LIBJQ_NAME):
 	export CFLAGS="$(EXTRA_C_FLAGS)" && \
 	export LDFLAGS="$(MEMSAN_FLAGS)" && \
 	autoreconf -fi && \
-	./configure --with-oniguruma=builtin --disable-maintainer-mode --prefix=$(LIBJQ_PREFIX) && \
-	$(MAKE) -C modules/oniguruma/ && \
-	$(MAKE) src/builtin.inc && \
-	$(MAKE) libjq.la) && \
-	(mkdir $(EXT_LIBS) || true) && \
-	cp $(JQSRC_DIR)/.libs/libjq.* $(EXT_LIBS)/ && \
-	cp $(JQSRC_DIR)/modules/oniguruma/src/.libs/libonig.* $(EXT_LIBS)/
+	./configure --with-oniguruma=builtin --prefix=$(LIBJQ_PREFIX) && \
+	$(MAKE))
+	mkdir -p $(EXT_LIBS)
+	cp $(JQSRC_DIR)/.libs/libjq.* $(EXT_LIBS)/
+	cp $(JQSRC_DIR)/vendor/oniguruma/src/.libs/libonig.* $(EXT_LIBS)/
 
 clean:
 	@rm -f $(OBJECTS)

@@ -40,8 +40,12 @@ empty_input_t_() ->
     [
        ?_assertMatch({error, {jq_err_parse, _}}, jq:process_json(<<".">>, <<"">>))
      , ?_assertMatch({error, {jq_err_parse, _}}, jq:process_json(<<".">>, <<" ">>))
-     , ?_assertMatch({ok,[<<"{}">>]}, jq:process_json(<<"">>, <<"{}">>))
-     , ?_assertMatch({ok,[<<"{}">>]}, jq:process_json(<<" ">>, <<"{}">>))].
+     , ?_assertMatch({error, {jq_err_compile,
+                       <<"jq: error: Top-level program not given", _/bytes>>}},
+                     jq:process_json(<<"">>, <<"{}">>))
+     , ?_assertMatch({error, {jq_err_compile,
+                       <<"jq: error: Top-level program not given", _/bytes>>}},
+                     jq:process_json(<<" ">>, <<"{}">>))].
 empty_input_test_() -> wrap_setup_cleanup(empty_input_t_()).
 
 include_t_() ->
@@ -122,7 +126,7 @@ timeout_t_() ->
                                     TO(),
                                     OK(),
                                     Parent ! self() end) ||
-                 X <- lists:seq(1, NrOfSubProcesses)],
+                 _ <- lists:seq(1, NrOfSubProcesses)],
         ct:pal("Starting to wait for processes"),
         Sum = lists:sum([ begin 
                               % erlang:display({'Process finnished timeout', X}),
