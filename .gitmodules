@@ -1,6 +1,6 @@
 [submodule "c_src/libs/c_reusable_data_structures"]
 	path = c_src/libs/c_reusable_data_structures
-	url = https://github.com/emqx/c_reusable_data_structures.git
+	url = https://github.com/moonpeople/c_reusable_data_structures.git
 	branch = master
 [submodule "c_src/libs/jqc"]
 	path = c_src/libs/jqc
