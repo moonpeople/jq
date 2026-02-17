@@ -23,6 +23,24 @@ if [ ! -f "${PKGFILE}.sha256" ]; then
     curl -f -L -o "${PKGFILE}.sha256" "${URL}.sha256"
 fi
 
-echo "$(cat "${PKGFILE}.sha256") $PKGFILE" | sha256sum -c || exit 1
+expected_sha="$(tr -d '\r' <"${PKGFILE}.sha256" | awk '{print $1}')"
+if [ -z "${expected_sha}" ]; then
+    echo "missing checksum in ${PKGFILE}.sha256" >&2
+    exit 1
+fi
+
+if command -v sha256sum >/dev/null 2>&1; then
+    actual_sha="$(sha256sum "${PKGFILE}" | awk '{print $1}')"
+elif command -v shasum >/dev/null 2>&1; then
+    actual_sha="$(shasum -a 256 "${PKGFILE}" | awk '{print $1}')"
+else
+    echo "sha256sum or shasum not found" >&2
+    exit 1
+fi
+
+if [ "${expected_sha}" != "${actual_sha}" ]; then
+    echo "checksum mismatch for ${PKGFILE}" >&2
+    exit 1
+fi
 
 tar -xzf "${PKGFILE}" -C .
